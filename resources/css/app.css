@@ -1,0 +1,1371 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/*
+|--------------------------------------------------------------------------
+| KAPE-CHA — printed menu design system
+|--------------------------------------------------------------------------
+| The page is a sheet of warm white paper. Ink is near-black, hairlines are
+| barely there, and the only colour in the building is a single restrained
+| coffee brown used for accents and never for decoration.
+|
+| Two families do the work. An elegant serif carries the brand wordmark, the
+| lowercase section headings, and the printed receipt moments. A neutral sans
+| carries everything operational: navigation, dish names, prices,
+| descriptions, buttons, forms, tables, and status. A monospace is reserved
+| for machine data only - the SQL trace - where proportional type would be
+| actively harder to read.
+|
+| There is no shadow vocabulary and no radius vocabulary. Structure comes from
+| 1px rules and whitespace - with one deliberate exception. Interaction needs
+| to be louder than the page around it, so the building reserves a single
+| near-black espresso for actions and a single burgundy for destruction. A
+| printed page never shouts; a button that means "do this" always does.
+*/
+
+@theme {
+    /* Paper & ink */
+    --color-paper: #faf9f6;
+    --color-white: #ffffff;
+    --color-ink: #171717;
+    --color-muted: #666666;
+    --color-line: #e5e5e5;
+    --color-line-soft: #eeeeec;
+    --color-coffee: #6f4e37;
+    --color-coffee-soft: #f2ede8;
+
+    /* Action. One colour means "do this". It is a dark espresso rather than
+     | the pure ink of the type, so a filled button still reads as part of the
+     | house palette instead of as a hole cut in the page. */
+    --color-action: #2f241f;
+    --color-action-hover: #453229;
+    --color-action-ink: #ffffff;
+    --color-action-soft: #ece5e0;
+
+    /* Destruction. Restrained burgundy - present, never cheerful. */
+    --color-danger: #7d2b26;
+    --color-danger-hover: #953731;
+    --color-danger-soft: #fbf5f4;
+    --color-danger-line: #e3c9c6;
+    --color-danger-ink: #5c1e1a;
+
+    /* Feedback washes. Each message also carries a glyph and a word, so the
+     | tone is never the only signal. */
+    --color-success: #3f5a45;
+    --color-success-soft: #f4f8f4;
+    --color-success-line: #c8d6ca;
+    --color-warning: #8a6d3b;
+    --color-warning-soft: #fdfaf3;
+    --color-warning-line: #e4d7bb;
+    --color-info: #3f5560;
+    --color-info-soft: #f5f8f9;
+    --color-info-line: #cfdbe0;
+
+    /* Disabled controls need their own fill so they read as unavailable
+     | rather than merely faint. */
+    --color-disabled: #f1efeb;
+    --color-disabled-ink: #8d8b86;
+
+    /* Status, kept desaturated so a queue of tickets stays calm */
+    --color-pending: #8a6d3b;
+    --color-processing: #6f4e37;
+    --color-completed: #4f6152;
+    --color-cancelled: #8c8c8c;
+
+    /* Typography */
+    --font-display: 'Cormorant Garamond', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', 'Cascadia Mono', monospace;
+
+    /* Restraint: no rounded vocabulary, no shadow vocabulary. */
+    --radius-xs: 0;
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --radius-xl: 0;
+    --radius-2xl: 0;
+    --radius-3xl: 0;
+    --radius-full: 0;
+}
+
+@layer base {
+    :root {
+        color-scheme: light;
+    }
+
+    html {
+        -webkit-text-size-adjust: 100%;
+        scroll-behavior: smooth;
+    }
+
+    body {
+        background-color: var(--color-paper);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-size: 0.9375rem;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: 'kern' 1, 'liga' 1;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        font-weight: 400;
+        letter-spacing: -0.01em;
+    }
+
+    /* Prices, quantities, totals, and stock counts all align in columns. */
+    .tabular,
+    time,
+    .kc-price {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: 'tnum' 1;
+    }
+
+    ::selection {
+        background-color: var(--color-coffee);
+        color: var(--color-white);
+    }
+
+    /* Focus is a real affordance now, not a hairline: a 2px ring with a
+     | paper-coloured inner edge, so it stays visible on a dark filled
+     | button as well as on the paper background. */
+    :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+        outline: 2px solid var(--color-action);
+        outline-offset: 2px;
+    }
+
+    /* Native controls inherit the paper, not the platform. */
+    input,
+    select,
+    textarea,
+    button {
+        font: inherit;
+        color: inherit;
+    }
+
+    /* A control that is unavailable is dimmed *and* relabelled by the server,
+     * so the state never depends on seeing the colour. */
+    [aria-disabled='true'] {
+        cursor: not-allowed;
+    }
+
+    /* The thin dotted leader that carries a price to the edge of the column. */
+    .kc-leader {
+        flex: 1 1 auto;
+        min-width: 1.5rem;
+        height: 0;
+        align-self: baseline;
+        border-bottom: 1px dotted var(--color-line);
+    }
+}
+
+@layer components {
+    /* ---------------------------------------------------------------
+     | Wordmark & masthead
+     * ------------------------------------------------------------- */
+
+    .kc-wordmark {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 1.375rem;
+        letter-spacing: 0.18em;
+        line-height: 1;
+        text-transform: uppercase;
+        color: var(--color-ink);
+    }
+
+    .kc-wordmark--large {
+        font-size: clamp(1.75rem, 4vw, 2.5rem);
+        letter-spacing: 0.22em;
+    }
+
+    /* ---------------------------------------------------------------
+     | Section headings — lowercase serif, as on the printed menu
+     * ------------------------------------------------------------- */
+
+    .kc-section {
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        line-height: 1.05;
+        letter-spacing: -0.015em;
+        color: var(--color-ink);
+    }
+
+    .kc-subsection {
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-size: 1.5rem;
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+    }
+
+    /* The small tracked label used for eyebrows, column heads, and the
+     | back-office screens. Sans, not serif: it is instruction, not display. */
+    .kc-label {
+        font-family: var(--font-sans);
+        font-size: 0.6875rem;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color-muted);
+    }
+
+    .kc-meta {
+        font-size: 0.75rem;
+        line-height: 1.5;
+        color: var(--color-muted);
+    }
+
+    .kc-prose {
+        font-size: 0.9375rem;
+        line-height: 1.7;
+        color: var(--color-muted);
+        max-width: 34rem;
+    }
+
+    /* ---------------------------------------------------------------
+     | Navigation
+     * ------------------------------------------------------------- */
+
+    .kc-nav {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        color: var(--color-muted);
+        padding-block: 0.375rem;
+        border-bottom: 1px solid transparent;
+        transition: color 120ms ease, border-color 120ms ease;
+    }
+
+    .kc-nav:hover {
+        color: var(--color-ink);
+    }
+
+    .kc-nav[aria-current='page'],
+    .kc-nav.is-active {
+        color: var(--color-ink);
+        border-bottom-color: var(--color-coffee);
+    }
+
+    /* ---------------------------------------------------------------
+     | Buttons — quiet page, loud actions
+     |
+     | Four levels, and no more:
+     |   .kc-btn              outlined   secondary  (the default)
+     |   .kc-btn--primary     filled     the one thing to do next
+     |   .kc-btn--danger      filled     destructive
+     |   .kc-btn--ghost       as text    tertiary, low commitment
+     |
+     | Every level keeps a 1px boundary and a 2.75rem (44px) minimum target,
+     | because an action the eye cannot find is worse than an action that
+     | looks loud.
+     * ------------------------------------------------------------- */
+
+    .kc-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 2.75rem;
+        padding: 0.75rem 1.5rem;
+        border: 1px solid var(--color-ink);
+        background-color: var(--color-paper);
+        color: var(--color-ink);
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        text-align: center;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+        transition:
+            background-color 120ms ease,
+            color 120ms ease,
+            border-color 120ms ease,
+            transform 60ms ease;
+    }
+
+    .kc-btn:hover {
+        background-color: var(--color-ink);
+        color: var(--color-white);
+    }
+
+    /* Pressed: the button physically acknowledges the press. */
+    .kc-btn:active {
+        transform: translateY(1px);
+    }
+
+    /* The primary action. Filled espresso, white label, unmistakable. */
+    .kc-btn--primary {
+        background-color: var(--color-action);
+        border-color: var(--color-action);
+        color: var(--color-action-ink);
+        font-weight: 600;
+    }
+
+    .kc-btn--primary:hover {
+        background-color: var(--color-action-hover);
+        border-color: var(--color-action-hover);
+        color: var(--color-action-ink);
+    }
+
+    /* Destructive. Same weight as primary, unmistakable hue. */
+    .kc-btn--danger {
+        background-color: var(--color-danger);
+        border-color: var(--color-danger);
+        color: #ffffff;
+        font-weight: 600;
+    }
+
+    .kc-btn--danger:hover {
+        background-color: var(--color-danger-hover);
+        border-color: var(--color-danger-hover);
+        color: #ffffff;
+    }
+
+    /* Tertiary: reads as type until it is hovered, then commits. */
+    .kc-btn--ghost {
+        border-color: transparent;
+        background-color: transparent;
+        color: var(--color-muted);
+        text-decoration: underline;
+        text-decoration-color: var(--color-line);
+        text-underline-offset: 0.35em;
+    }
+
+    .kc-btn--ghost:hover {
+        background-color: transparent;
+        color: var(--color-ink);
+        text-decoration-color: var(--color-ink);
+    }
+
+    /* Kept for the existing call sites: a de-emphasised outline. */
+    .kc-btn--quiet {
+        border-color: var(--color-line);
+        color: var(--color-muted);
+    }
+
+    .kc-btn--quiet:hover {
+        border-color: var(--color-ink);
+        background-color: transparent;
+        color: var(--color-ink);
+    }
+
+    /* Older alias, now the primary treatment. */
+    .kc-btn--solid {
+        background-color: var(--color-action);
+        border-color: var(--color-action);
+        color: var(--color-action-ink);
+        font-weight: 600;
+    }
+
+    .kc-btn--solid:hover {
+        background-color: var(--color-action-hover);
+        border-color: var(--color-action-hover);
+        color: var(--color-action-ink);
+    }
+
+    .kc-btn--block {
+        width: 100%;
+    }
+
+    .kc-btn--sm {
+        min-height: 2.25rem;
+        padding: 0.4375rem 0.875rem;
+        font-size: 0.6875rem;
+        letter-spacing: 0.12em;
+    }
+
+    .kc-btn--lg {
+        min-height: 3.25rem;
+        padding: 1rem 2rem;
+        font-size: 0.8125rem;
+    }
+
+    /* A filled button needs the paper-coloured inner edge to keep its focus
+     | ring from vanishing into its own background. */
+    .kc-btn--primary:focus-visible,
+    .kc-btn--danger:focus-visible,
+    .kc-btn--solid:focus-visible {
+        outline-color: var(--color-action);
+        box-shadow: 0 0 0 2px var(--color-paper);
+    }
+
+    .kc-btn--danger:focus-visible {
+        outline-color: var(--color-danger);
+    }
+
+    /* Disabled is a fill change, not just an opacity dip, so the control
+     | still meets contrast against the paper. */
+    .kc-btn:disabled,
+    .kc-btn[aria-disabled='true'] {
+        background-color: var(--color-disabled);
+        border-color: var(--color-line);
+        color: var(--color-disabled-ink);
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .kc-btn:disabled:hover,
+    .kc-btn[aria-disabled='true']:hover {
+        background-color: var(--color-disabled);
+        border-color: var(--color-line);
+        color: var(--color-disabled-ink);
+    }
+
+    /* In flight: the label is replaced by script, and the control refuses a
+     | second press so an order cannot be submitted twice. */
+    .kc-btn[aria-busy='true'] {
+        cursor: progress;
+        opacity: 0.75;
+    }
+
+    .kc-btn__spinner {
+        width: 0.8125rem;
+        height: 0.8125rem;
+        border: 1.5px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 9999px;
+        animation: kc-spin 700ms linear infinite;
+    }
+
+    @keyframes kc-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .kc-btn__spinner {
+            animation-duration: 2s;
+        }
+
+        .kc-btn,
+        .kc-photo img {
+            transition: none;
+        }
+    }
+
+
+    /* A quiet inline action: reads as a line of type, not a button. */
+    .kc-action {
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--color-muted);
+        border-bottom: 1px solid var(--color-line);
+        padding-bottom: 2px;
+        cursor: pointer;
+        transition: color 120ms ease, border-color 120ms ease;
+    }
+
+    .kc-action:hover {
+        color: var(--color-coffee);
+        border-bottom-color: var(--color-coffee);
+    }
+
+    .kc-link {
+        color: var(--color-ink);
+        border-bottom: 1px solid var(--color-line);
+        transition: color 120ms ease, border-color 120ms ease;
+    }
+
+    .kc-link:hover {
+        color: var(--color-coffee);
+        border-bottom-color: var(--color-coffee);
+    }
+
+    /* ---------------------------------------------------------------
+     | Photography
+     * ------------------------------------------------------------- */
+
+    .kc-photo {
+        display: block;
+        width: 100%;
+        background-color: var(--color-coffee-soft);
+        overflow: hidden;
+    }
+
+    .kc-photo img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 600ms cubic-bezier(0.2, 0.6, 0.2, 1);
+    }
+
+    .kc-photo--zoom:hover img {
+        transform: scale(1.03);
+    }
+
+    /* ---------------------------------------------------------------
+     | Catalogue grid
+     * ------------------------------------------------------------- */
+
+    .kc-dish {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .kc-dish__name {
+        font-size: 0.9375rem;
+        font-weight: 500;
+        line-height: 1.35;
+        color: var(--color-ink);
+    }
+
+    .kc-dish__price {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-ink);
+    }
+
+    .kc-dish__note {
+        font-size: 0.75rem;
+        line-height: 1.55;
+        color: var(--color-coffee);
+    }
+
+    .kc-dish__body {
+        font-size: 0.8125rem;
+        line-height: 1.6;
+        color: var(--color-muted);
+    }
+
+    /* A dish out of stock greys out rather than disappearing, so the printed
+     | menu always matches the board behind the counter. */
+    .kc-dish--sold {
+        opacity: 0.55;
+    }
+
+    /* The compact text list used for food and dessert. */
+    .kc-line {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+    }
+
+    .kc-line__name {
+        font-size: 0.9375rem;
+        font-weight: 500;
+        color: var(--color-ink);
+    }
+
+    .kc-line__price {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-ink);
+        white-space: nowrap;
+    }
+
+    /* ---------------------------------------------------------------
+     | Add-to-order disclosure
+     * ------------------------------------------------------------- */
+
+    .kc-disclosure > summary {
+        list-style: none;
+        cursor: pointer;
+    }
+
+    .kc-disclosure > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .kc-disclosure > summary::after {
+        content: '+';
+        display: inline-block;
+        margin-left: 0.4rem;
+        color: var(--color-muted);
+    }
+
+    .kc-disclosure[open] > summary::after {
+        content: '\2212';
+    }
+
+    /* ---------------------------------------------------------------
+     | Quantity stepper — [ − ] n [ + ]
+     |
+     | The number stays a real <input>, so the form submits correctly with
+     | scripting off. The two buttons are 2.75rem square, which is the
+     | minimum a thumb can hit without aiming.
+     * ------------------------------------------------------------- */
+
+    .kc-stepper {
+        display: inline-flex;
+        align-items: stretch;
+        border: 1px solid var(--color-line);
+        background-color: var(--color-white);
+    }
+
+    .kc-stepper__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        min-height: 2.75rem;
+        border: 0;
+        background-color: transparent;
+        color: var(--color-ink);
+        font-size: 1.0625rem;
+        line-height: 1;
+        cursor: pointer;
+        transition: background-color 120ms ease, color 120ms ease;
+    }
+
+    .kc-stepper__btn:hover {
+        background-color: var(--color-action);
+        color: var(--color-action-ink);
+    }
+
+    .kc-stepper__btn:disabled {
+        background-color: var(--color-disabled);
+        color: var(--color-disabled-ink);
+        cursor: not-allowed;
+    }
+
+    .kc-stepper__input {
+        width: 3.5rem;
+        min-height: 2.75rem;
+        padding: 0.5rem 0.25rem;
+        border: 0;
+        border-inline: 1px solid var(--color-line);
+        background-color: var(--color-white);
+        color: var(--color-ink);
+        font-size: 0.9375rem;
+        text-align: center;
+        -moz-appearance: textfield;
+    }
+
+    .kc-stepper__input::-webkit-outer-spin-button,
+    .kc-stepper__input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .kc-stepper__input:focus {
+        outline: 2px solid var(--color-action);
+        outline-offset: -2px;
+    }
+
+    /* ---------------------------------------------------------------
+     | Messages — icon, short title, body, optional action
+     |
+     | Restrained by size, loud by structure. Every tone carries a glyph and
+     | a word, so nothing depends on recognising a colour.
+     * ------------------------------------------------------------- */
+
+    .kc-msg {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.875rem;
+        padding: 0.9375rem 1.125rem;
+        border: 1px solid var(--color-line);
+        background-color: var(--color-white);
+        font-size: 0.875rem;
+        line-height: 1.55;
+        color: var(--color-ink);
+    }
+
+    .kc-msg__icon {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-top: 0.0625rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1;
+        border: 1px solid currentColor;
+        border-radius: 9999px;
+    }
+
+    .kc-msg__title {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    .kc-msg__body {
+        margin-top: 0.1875rem;
+        color: var(--color-ink);
+    }
+
+    .kc-msg__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+    }
+
+    .kc-msg--success {
+        border-color: var(--color-success-line);
+        background-color: var(--color-success-soft);
+    }
+
+    .kc-msg--success .kc-msg__icon,
+    .kc-msg--success .kc-msg__title {
+        color: var(--color-success);
+    }
+
+    .kc-msg--error {
+        border-color: var(--color-danger-line);
+        background-color: var(--color-danger-soft);
+    }
+
+    .kc-msg--error .kc-msg__icon,
+    .kc-msg--error .kc-msg__title {
+        color: var(--color-danger);
+    }
+
+    .kc-msg--warning {
+        border-color: var(--color-warning-line);
+        background-color: var(--color-warning-soft);
+    }
+
+    .kc-msg--warning .kc-msg__icon,
+    .kc-msg--warning .kc-msg__title {
+        color: var(--color-warning);
+    }
+
+    .kc-msg--info {
+        border-color: var(--color-info-line);
+        background-color: var(--color-info-soft);
+    }
+
+    .kc-msg--info .kc-msg__icon,
+    .kc-msg--info .kc-msg__title {
+        color: var(--color-info);
+    }
+
+    /* ---------------------------------------------------------------
+     | Order status — the word, then what it means
+     * ------------------------------------------------------------- */
+
+    .kc-status-block {
+        padding: 1.125rem 1.25rem;
+        border: 1px solid var(--color-line);
+        background-color: var(--color-white);
+    }
+
+    .kc-status-block__word {
+        font-family: var(--font-display);
+        font-size: 1.75rem;
+        line-height: 1.1;
+        letter-spacing: 0.01em;
+        color: var(--color-ink);
+    }
+
+    .kc-status-block__note {
+        margin-top: 0.375rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        color: var(--color-muted);
+    }
+
+    .kc-status-block--pending {
+        border-left: 3px solid var(--color-pending);
+    }
+
+    .kc-status-block--processing {
+        border-left: 3px solid var(--color-processing);
+    }
+
+    .kc-status-block--completed {
+        border-left: 3px solid var(--color-completed);
+    }
+
+    .kc-status-block--cancelled {
+        border-left: 3px solid var(--color-danger);
+    }
+
+    /* ---------------------------------------------------------------
+     | Sticky mobile action bar
+     |
+     | A long cart should never push its own primary action off the screen.
+     * Only on narrow viewports, where the bar is the point.
+     * ------------------------------------------------------------- */
+
+    .kc-sticky-cta {
+        display: none;
+    }
+
+    @media (max-width: 47.99rem) {
+        .kc-sticky-cta {
+            position: fixed;
+            inset-inline: 0;
+            bottom: 0;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.75rem 1.25rem;
+            padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+            border-top: 1px solid var(--color-ink);
+            background-color: var(--color-paper);
+        }
+
+        /* Room for the bar so the last row is never trapped beneath it. */
+        .kc-has-sticky-cta {
+            padding-bottom: 6.5rem;
+        }
+    }
+
+    /* ---------------------------------------------------------------
+     | Confirmation dialog
+     |
+     | A native <dialog>: focus-trapped, Escape-closable, and announced.
+     | Replaces window.confirm so a destructive action can explain itself.
+     * ------------------------------------------------------------- */
+
+    .kc-dialog {
+        width: min(28rem, calc(100vw - 2rem));
+        padding: 0;
+        border: 1px solid var(--color-ink);
+        background-color: var(--color-paper);
+        color: var(--color-ink);
+    }
+
+    .kc-dialog::backdrop {
+        background-color: rgba(23, 23, 23, 0.55);
+    }
+
+    .kc-dialog__body {
+        padding: 1.5rem;
+    }
+
+    .kc-dialog__title {
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+        line-height: 1.15;
+        color: var(--color-ink);
+    }
+
+    .kc-dialog__note {
+        margin-top: 0.625rem;
+        font-size: 0.875rem;
+        line-height: 1.6;
+        color: var(--color-muted);
+    }
+
+    .kc-dialog__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--color-line);
+        background-color: var(--color-white);
+    }
+
+    /* A labelled field with its own error, kept beside the control that
+     * caused it rather than pooled at the top of the page. */
+    .kc-fieldset {
+        border: 0;
+        padding: 0;
+        margin: 0;
+    }
+
+    .kc-fieldset:disabled {
+        opacity: 0.55;
+    }
+
+    .kc-hint {
+        margin-top: 0.375rem;
+        font-size: 0.75rem;
+        line-height: 1.5;
+        color: var(--color-muted);
+    }
+
+    /* ---------------------------------------------------------------
+     | Order sheet / receipt
+     * ------------------------------------------------------------- */
+
+
+    .kc-sheet {
+        background-color: var(--color-white);
+        border: 1px solid var(--color-line);
+    }
+
+    .kc-sheet__row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-block: 1.125rem;
+        border-bottom: 1px solid var(--color-line-soft);
+    }
+
+    .kc-total {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: var(--color-ink);
+    }
+
+    /* ---------------------------------------------------------------
+     | Forms
+     * ------------------------------------------------------------- */
+
+    .kc-field {
+        width: 100%;
+        padding: 0.8125rem 0.9375rem;
+        background-color: var(--color-white);
+        border: 1px solid var(--color-line);
+        color: var(--color-ink);
+        font-size: 0.9375rem;
+        line-height: 1.4;
+        transition: border-color 120ms ease;
+    }
+
+    .kc-field::placeholder {
+        color: #a3a3a3;
+    }
+
+    .kc-field:hover {
+        border-color: #d4d4d4;
+    }
+
+    .kc-field:focus {
+        outline: none;
+        border-color: var(--color-ink);
+    }
+
+    .kc-field[aria-invalid='true'] {
+        border-color: var(--color-danger);
+        background-color: var(--color-danger-soft);
+    }
+
+    /* A stepper has no .kc-field wrapper, so the same warning is keyed off
+       the attribute the markup already sets. */
+    .kc-stepper__input[aria-invalid='true'] {
+        color: var(--color-danger);
+        background-color: var(--color-danger-soft);
+    }
+
+    .kc-field--select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23666666' stroke-width='1.2'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.9375rem center;
+        padding-right: 2.25rem;
+    }
+
+    .kc-error {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.375rem;
+        margin-top: 0.4375rem;
+        font-size: 0.75rem;
+        line-height: 1.5;
+        font-weight: 500;
+        color: var(--color-danger);
+    }
+
+    .kc-error::before {
+        content: '!';
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 0.9375rem;
+        height: 0.9375rem;
+        margin-top: 0.0625rem;
+        font-size: 0.625rem;
+        font-weight: 700;
+        line-height: 1;
+        color: #ffffff;
+        background-color: var(--color-danger);
+        border-radius: 9999px;
+    }
+
+    /* A field can fail for more than one reason, so the lines stack. */
+    .kc-error__body {
+        display: grid;
+        gap: 0.1875rem;
+        min-width: 0;
+    }
+
+    /*
+     | The list of things to fix, shown once at the top of the page.
+     |
+     | It is a list of links rather than a wall of text: each entry jumps to
+     | the field it belongs to and moves focus there, so a keyboard user does
+     | not have to hunt down the nth input on a long form.
+     */
+    .kc-error-summary {
+        margin-top: 0.75rem;
+        padding-top: 0.625rem;
+        border-top: 1px solid color-mix(in srgb, var(--color-danger) 25%, transparent);
+        list-style: none;
+    }
+
+    .kc-error-summary__link {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        padding: 0.1875rem 0;
+        font-size: 0.75rem;
+        font-weight: 500;
+        line-height: 1.5;
+        color: var(--color-danger);
+        text-decoration: underline;
+        text-underline-offset: 0.1875rem;
+    }
+
+    .kc-error-summary__link:hover {
+        color: var(--color-danger-hover);
+    }
+
+    .kc-error-summary__field {
+        flex: 0 0 auto;
+        font-family: var(--font-sans);
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        opacity: 0.75;
+    }
+
+    /* A required field is marked with a glyph that is also read aloud. */
+    .kc-required {
+        margin-left: 0.25rem;
+        color: var(--color-danger);
+        font-weight: 600;
+    }
+
+    /*
+     | A line on the ticket whose stock no longer covers the request.
+     */
+    .kc-stock-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.25rem 0.625rem;
+        margin-top: 0.375rem;
+        padding: 0.5rem 0.625rem;
+        border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent);
+        background-color: var(--color-danger-soft);
+        font-size: 0.75rem;
+        line-height: 1.5;
+        color: var(--color-danger-ink);
+    }
+
+    .kc-stock-line__name {
+        font-weight: 600;
+    }
+
+    .kc-stock-line__numbers {
+        font-family: var(--font-sans);
+        font-weight: 500;
+        opacity: 0.85;
+    }
+
+    .kc-choice {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        padding: 0.8125rem 0.9375rem;
+        border: 1px solid var(--color-line);
+        background-color: var(--color-white);
+        cursor: pointer;
+        transition: border-color 120ms ease;
+    }
+
+    .kc-choice:hover {
+        border-color: #d4d4d4;
+    }
+
+    .kc-choice:has(:checked) {
+        border-color: var(--color-ink);
+    }
+
+    .kc-choice input {
+        accent-color: var(--color-ink);
+    }
+
+    /* ---------------------------------------------------------------
+     | Tables — the inventory sheet and the ticket queue
+     * ------------------------------------------------------------- */
+
+    .kc-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .kc-table thead th {
+        padding: 0 1rem 0.75rem;
+        border-bottom: 1px solid var(--color-ink);
+        font-size: 0.6875rem;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color-muted);
+        white-space: nowrap;
+    }
+
+    .kc-table thead th:first-child {
+        padding-left: 0;
+    }
+
+    .kc-table tbody td {
+        padding: 1.125rem 1rem;
+        border-bottom: 1px solid var(--color-line-soft);
+        font-size: 0.875rem;
+        vertical-align: baseline;
+    }
+
+    .kc-table tbody td:first-child {
+        padding-left: 0;
+    }
+
+    .kc-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .kc-table tbody tr:hover td {
+        background-color: #fbfaf8;
+    }
+
+    /* Below the breakpoint a table stops being a table: each row becomes a
+     | labelled block, the way a printed docket breaks on a narrow column. */
+    @media (max-width: 47.99rem) {
+        .kc-table--stack thead {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+
+        .kc-table--stack tbody tr {
+            display: block;
+            padding-block: 1.125rem;
+            border-bottom: 1px solid var(--color-line);
+        }
+
+        .kc-table--stack tbody tr:last-child {
+            border-bottom: 0;
+        }
+
+        .kc-table--stack tbody td {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.25rem 0;
+            border: 0;
+        }
+
+        .kc-table--stack tbody td::before {
+            content: attr(data-label);
+            flex: 0 0 auto;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--color-muted);
+        }
+
+        .kc-table--stack tbody td[data-label='']::before {
+            content: none;
+        }
+    }
+
+    /* ---------------------------------------------------------------
+     | Status — a word and a dot, never a pill
+     * ------------------------------------------------------------- */
+
+    .kc-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4375rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        color: var(--color-ink);
+        white-space: nowrap;
+    }
+
+    .kc-status::before {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 9999px;
+        background-color: currentColor;
+        flex: 0 0 auto;
+    }
+
+    .kc-status--pending {
+        color: var(--color-pending);
+    }
+
+    .kc-status--processing {
+        color: var(--color-processing);
+    }
+
+    .kc-status--completed {
+        color: var(--color-completed);
+    }
+
+    .kc-status--cancelled {
+        color: var(--color-cancelled);
+        text-decoration: line-through;
+    }
+
+    /* Desk roles read as a word and a dot in the same hand as ticket states. */
+    .kc-status--admin {
+        color: var(--color-coffee);
+    }
+
+    .kc-status--staff {
+        color: var(--color-muted);
+    }
+
+    .kc-status--neutral {
+        color: var(--color-ink);
+    }
+
+    /* ---------------------------------------------------------------
+     | Figures — a back-office number with its label
+     * ------------------------------------------------------------- */
+
+    .kc-figure__value {
+        font-size: 1.75rem;
+        font-weight: 400;
+        line-height: 1.1;
+        color: var(--color-ink);
+    }
+
+    /* ---------------------------------------------------------------
+     | Notices
+     * ------------------------------------------------------------- */
+
+    .kc-notice {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+        padding: 0.9375rem 1.125rem;
+        border: 1px solid var(--color-line);
+        background-color: var(--color-white);
+        font-size: 0.875rem;
+        color: var(--color-ink);
+    }
+
+    .kc-notice--error {
+        border-color: #d8b6b4;
+        background-color: #fdf8f7;
+    }
+
+    .kc-notice--success {
+        border-color: #c3cfc4;
+        background-color: #f8faf8;
+    }
+
+    /* ---------------------------------------------------------------
+     | The transaction trace
+     * ------------------------------------------------------------- */
+
+    .kc-trace {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        line-height: 1.85;
+        color: var(--color-ink);
+        word-break: break-word;
+    }
+
+    .kc-trace__line {
+        display: block;
+        padding-block: 0.0625rem;
+    }
+
+    .kc-trace__line--note {
+        color: var(--color-muted);
+    }
+
+    .kc-trace__line--commit {
+        color: var(--color-completed);
+    }
+
+    .kc-trace__line--rollback {
+        color: var(--color-danger);
+    }
+
+    /* ---------------------------------------------------------------
+     | Pagination
+     * ------------------------------------------------------------- */
+
+    .kc-pager {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--color-line);
+        font-size: 0.75rem;
+        color: var(--color-muted);
+    }
+
+    .kc-pager__pages {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .kc-pager__pages a,
+    .kc-pager__pages span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2rem;
+        height: 2rem;
+        padding-inline: 0.5rem;
+        font-size: 0.75rem;
+        color: var(--color-muted);
+        border: 1px solid transparent;
+        transition: color 120ms ease, border-color 120ms ease;
+    }
+
+    .kc-pager__pages a:hover {
+        color: var(--color-ink);
+        border-color: var(--color-line);
+    }
+
+    .kc-pager__pages .is-current {
+        color: var(--color-ink);
+        border-color: var(--color-ink);
+    }
+
+    .kc-pager__pages .is-disabled {
+        opacity: 0.35;
+    }
+
+    /* ---------------------------------------------------------------
+     | The closing colophon
+     * ------------------------------------------------------------- */
+
+    .kc-colophon {
+        border-top: 1px solid var(--color-ink);
+        padding-top: 1.5rem;
+        font-size: 0.75rem;
+        line-height: 1.7;
+        color: var(--color-muted);
+    }
+}
